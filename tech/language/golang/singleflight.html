@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>三方库:singleflight 解决缓存失效时的缓存击穿问题 | Hero37&#39;s Blog</title>
+    <meta name="generator" content="VuePress 1.8.2">
+    <link rel="icon" href="/imgs/logo.png">
+    <meta name="description" content="37A的个人博客">
+    
+    <link rel="preload" href="/assets/css/0.styles.8d116657.css" as="style"><link rel="preload" href="/assets/js/app.8efeaaba.js" as="script"><link rel="preload" href="/assets/js/2.b7f7a349.js" as="script"><link rel="preload" href="/assets/js/20.9ccbc123.js" as="script"><link rel="prefetch" href="/assets/js/10.b5581fb5.js"><link rel="prefetch" href="/assets/js/11.e2a65226.js"><link rel="prefetch" href="/assets/js/12.ddf1d4bf.js"><link rel="prefetch" href="/assets/js/13.8900cfc9.js"><link rel="prefetch" href="/assets/js/14.9d7a1e92.js"><link rel="prefetch" href="/assets/js/15.46b77f51.js"><link rel="prefetch" href="/assets/js/16.983cead3.js"><link rel="prefetch" href="/assets/js/17.75470d12.js"><link rel="prefetch" href="/assets/js/18.d45896cd.js"><link rel="prefetch" href="/assets/js/19.437aedc3.js"><link rel="prefetch" href="/assets/js/21.65a4bdc9.js"><link rel="prefetch" href="/assets/js/22.25211b16.js"><link rel="prefetch" href="/assets/js/3.6cae0475.js"><link rel="prefetch" href="/assets/js/4.c610d016.js"><link rel="prefetch" href="/assets/js/5.216dfe20.js"><link rel="prefetch" href="/assets/js/6.73a8f323.js"><link rel="prefetch" href="/assets/js/7.1010668f.js"><link rel="prefetch" href="/assets/js/8.2d717214.js"><link rel="prefetch" href="/assets/js/9.62dfcaf8.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.8d116657.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><img src="/imgs/logo.webp" alt="Hero37's Blog" class="logo"> <span class="site-name can-hide">Hero37's Blog</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/" class="nav-link">
+  Home
+</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="技术文章" class="dropdown-title"><span class="title">技术文章</span> <span class="arrow down"></span></button> <button type="button" aria-label="技术文章" class="mobile-dropdown-title"><span class="title">技术文章</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/tech/language/" class="nav-link router-link-active">
+  编程语言
+</a></li><li class="dropdown-item"><!----> <a href="/tech/system/" class="nav-link">
+  计算机系统
+</a></li><li class="dropdown-item"><!----> <a href="/tech/hardware/" class="nav-link">
+  嵌入式软件
+</a></li><li class="dropdown-item"><!----> <a href="/tech/SE/" class="nav-link">
+  软件工程
+</a></li></ul></div></div><div class="nav-item"><a href="/life/" class="nav-link">
+  生活
+</a></div><div class="nav-item"><a href="https://space.bilibili.com/2876324/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  B站
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div class="nav-item"><a href="https://github.com/37acoder/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/" class="nav-link">
+  Home
+</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="技术文章" class="dropdown-title"><span class="title">技术文章</span> <span class="arrow down"></span></button> <button type="button" aria-label="技术文章" class="mobile-dropdown-title"><span class="title">技术文章</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/tech/language/" class="nav-link router-link-active">
+  编程语言
+</a></li><li class="dropdown-item"><!----> <a href="/tech/system/" class="nav-link">
+  计算机系统
+</a></li><li class="dropdown-item"><!----> <a href="/tech/hardware/" class="nav-link">
+  嵌入式软件
+</a></li><li class="dropdown-item"><!----> <a href="/tech/SE/" class="nav-link">
+  软件工程
+</a></li></ul></div></div><div class="nav-item"><a href="/life/" class="nav-link">
+  生活
+</a></div><div class="nav-item"><a href="https://space.bilibili.com/2876324/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  B站
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div class="nav-item"><a href="https://github.com/37acoder/" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <!----></nav>  <ul class="sidebar-links"><li><section class="sidebar-group collapsable depth-0"><a href="/tech/" class="sidebar-heading clickable router-link-active open"><span>技术</span> <span class="arrow down"></span></a> <ul class="sidebar-links sidebar-group-items"><li><section class="sidebar-group collapsable is-sub-group depth-1"><a href="/tech/language/" class="sidebar-heading clickable router-link-active open"><span>编程语言</span> <span class="arrow down"></span></a> <ul class="sidebar-links sidebar-group-items"><li><section class="sidebar-group collapsable is-sub-group depth-2"><a href="/tech/language/golang/" class="sidebar-heading clickable router-link-active open"><span>Golang</span> <span class="arrow down"></span></a> <ul class="sidebar-links sidebar-group-items"><li><a href="/tech/language/golang/InterfaceOfGolang.html" class="sidebar-link">语言-Golang Interface-解析Golang的接口</a></li><li><a href="/tech/language/golang/singleflight.html" aria-current="page" class="active sidebar-link">三方库-Singleflight-解决并发雪崩问题</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header"><a href="/tech/language/golang/singleflight.html#设计思路" class="sidebar-link">设计思路</a></li><li class="sidebar-sub-header"><a href="/tech/language/golang/singleflight.html#思考" class="sidebar-link">思考</a></li></ul></li><li><a href="/tech/language/golang/yichyaquestion.html" class="sidebar-link">语言-golang经典面试题-并发加载</a></li></ul></section></li></ul></section></li><li><a href="/tech/system/" class="sidebar-link">计算机系统</a></li><li><a href="/tech/hardware/" class="sidebar-link">嵌入式软件</a></li><li><a href="/tech/SE/" class="sidebar-link">软件工程</a></li></ul></section></li><li><section class="sidebar-group collapsable depth-0"><a href="/life/" class="sidebar-heading clickable"><span>生活</span> <span class="arrow right"></span></a> <!----></section></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="三方库-singleflight-解决缓存失效时的缓存击穿问题"><a href="#三方库-singleflight-解决缓存失效时的缓存击穿问题" class="header-anchor">#</a> 三方库:singleflight 解决缓存失效时的缓存击穿问题</h1> <p>git ref: <a href="https://github.com/golang/groupcache/blob/master/singleflight/singleflight.go" target="_blank" rel="noopener noreferrer">https://github.com/golang/groupcache/blob/master/singleflight/singleflight.go<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></p> <div class="language-go extra-class"><pre class="language-go"><code><span class="token keyword">package</span> singleflight
+
+<span class="token keyword">import</span> <span class="token string">&quot;sync&quot;</span>
+
+<span class="token comment">// call is an in-flight or completed Do call</span>
+<span class="token keyword">type</span> call <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+	wg  sync<span class="token punctuation">.</span>WaitGroup
+	val <span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+	err <span class="token builtin">error</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Group represents a class of work and forms a namespace in which</span>
+<span class="token comment">// units of work can be executed with duplicate suppression.</span>
+<span class="token keyword">type</span> Group <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+	mu sync<span class="token punctuation">.</span>Mutex       <span class="token comment">// protects m</span>
+	m  <span class="token keyword">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token operator">*</span>call <span class="token comment">// lazily initialized</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Do executes and returns the results of the given function, making</span>
+<span class="token comment">// sure that only one execution is in-flight for a given key at a</span>
+<span class="token comment">// time. If a duplicate comes in, the duplicate caller waits for the</span>
+<span class="token comment">// original to complete and receives the same results.</span>
+<span class="token keyword">func</span> <span class="token punctuation">(</span>g <span class="token operator">*</span>Group<span class="token punctuation">)</span> <span class="token function">Do</span><span class="token punctuation">(</span>key <span class="token builtin">string</span><span class="token punctuation">,</span> fn <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	g<span class="token punctuation">.</span>mu<span class="token punctuation">.</span><span class="token function">Lock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> g<span class="token punctuation">.</span>m <span class="token operator">==</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		g<span class="token punctuation">.</span>m <span class="token operator">=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token keyword">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token operator">*</span>call<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+	<span class="token keyword">if</span> c<span class="token punctuation">,</span> ok <span class="token operator">:=</span> g<span class="token punctuation">.</span>m<span class="token punctuation">[</span>key<span class="token punctuation">]</span><span class="token punctuation">;</span> ok <span class="token punctuation">{</span>
+		g<span class="token punctuation">.</span>mu<span class="token punctuation">.</span><span class="token function">Unlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+		c<span class="token punctuation">.</span>wg<span class="token punctuation">.</span><span class="token function">Wait</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+		<span class="token keyword">return</span> c<span class="token punctuation">.</span>val<span class="token punctuation">,</span> c<span class="token punctuation">.</span>err
+	<span class="token punctuation">}</span>
+	c <span class="token operator">:=</span> <span class="token function">new</span><span class="token punctuation">(</span>call<span class="token punctuation">)</span>
+	c<span class="token punctuation">.</span>wg<span class="token punctuation">.</span><span class="token function">Add</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+	g<span class="token punctuation">.</span>m<span class="token punctuation">[</span>key<span class="token punctuation">]</span> <span class="token operator">=</span> c
+	g<span class="token punctuation">.</span>mu<span class="token punctuation">.</span><span class="token function">Unlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	c<span class="token punctuation">.</span>val<span class="token punctuation">,</span> c<span class="token punctuation">.</span>err <span class="token operator">=</span> <span class="token function">fn</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	c<span class="token punctuation">.</span>wg<span class="token punctuation">.</span><span class="token function">Done</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	g<span class="token punctuation">.</span>mu<span class="token punctuation">.</span><span class="token function">Lock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token function">delete</span><span class="token punctuation">(</span>g<span class="token punctuation">.</span>m<span class="token punctuation">,</span> key<span class="token punctuation">)</span>
+	g<span class="token punctuation">.</span>mu<span class="token punctuation">.</span><span class="token function">Unlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	<span class="token keyword">return</span> c<span class="token punctuation">.</span>val<span class="token punctuation">,</span> c<span class="token punctuation">.</span>err
+<span class="token punctuation">}</span>
+</code></pre></div><p>singleflight是一个轻量级的防治缓存击穿的工具。</p> <h2 id="设计思路"><a href="#设计思路" class="header-anchor">#</a> 设计思路</h2> <h3 id="数据结构"><a href="#数据结构" class="header-anchor">#</a> 数据结构</h3> <p>使用mutex和waitgroup来做并发控制和同步</p> <p><code>Group</code>结构是singleflight的主要api</p> <div class="language-go extra-class"><pre class="language-go"><code><span class="token keyword">type</span> Group <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+	mu sync<span class="token punctuation">.</span>Mutex       <span class="token comment">// protects m</span>
+	m  <span class="token keyword">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token operator">*</span>call <span class="token comment">// lazily initialized</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p><code>mu</code>是互斥锁，用来保护 <code>m</code>这个map，防止并发读写map</p> <p><code>m</code>是一个map，其值是<code>call</code>。<code>m</code>里保存了当前正在执行的任务，可以通过m访问到某个正在进行的任务。</p> <p><code>call</code>结构是任务的类型</p> <div class="language-go extra-class"><pre class="language-go"><code><span class="token keyword">type</span> call <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+	wg  sync<span class="token punctuation">.</span>WaitGroup
+	val <span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+	err <span class="token builtin">error</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p><code>wg</code>是用来做任务同步的，正在执行任务的<code>goroutine</code>会给<code>wg</code>加1，其他<code>goroutine</code>会等待该<code>goroutine</code>执行完毕。</p> <p><code>val</code>,<code>err</code>是任务的输出，用来存储任务的结果。</p> <h3 id="主要逻辑"><a href="#主要逻辑" class="header-anchor">#</a> 主要逻辑</h3> <div class="language-go extra-class"><pre class="language-go"><code><span class="token keyword">func</span> <span class="token punctuation">(</span>g <span class="token operator">*</span>Group<span class="token punctuation">)</span> <span class="token function">Do</span><span class="token punctuation">(</span>key <span class="token builtin">string</span><span class="token punctuation">,</span> fn <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">interface</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	g<span class="token punctuation">.</span>mu<span class="token punctuation">.</span><span class="token function">Lock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token keyword">if</span> g<span class="token punctuation">.</span>m <span class="token operator">==</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		g<span class="token punctuation">.</span>m <span class="token operator">=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token keyword">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token operator">*</span>call<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+	<span class="token keyword">if</span> c<span class="token punctuation">,</span> ok <span class="token operator">:=</span> g<span class="token punctuation">.</span>m<span class="token punctuation">[</span>key<span class="token punctuation">]</span><span class="token punctuation">;</span> ok <span class="token punctuation">{</span>
+		g<span class="token punctuation">.</span>mu<span class="token punctuation">.</span><span class="token function">Unlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+		c<span class="token punctuation">.</span>wg<span class="token punctuation">.</span><span class="token function">Wait</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+		<span class="token keyword">return</span> c<span class="token punctuation">.</span>val<span class="token punctuation">,</span> c<span class="token punctuation">.</span>err
+	<span class="token punctuation">}</span>
+	c <span class="token operator">:=</span> <span class="token function">new</span><span class="token punctuation">(</span>call<span class="token punctuation">)</span>
+	c<span class="token punctuation">.</span>wg<span class="token punctuation">.</span><span class="token function">Add</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+	g<span class="token punctuation">.</span>m<span class="token punctuation">[</span>key<span class="token punctuation">]</span> <span class="token operator">=</span> c
+	g<span class="token punctuation">.</span>mu<span class="token punctuation">.</span><span class="token function">Unlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	c<span class="token punctuation">.</span>val<span class="token punctuation">,</span> c<span class="token punctuation">.</span>err <span class="token operator">=</span> <span class="token function">fn</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	c<span class="token punctuation">.</span>wg<span class="token punctuation">.</span><span class="token function">Done</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	g<span class="token punctuation">.</span>mu<span class="token punctuation">.</span><span class="token function">Lock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+	<span class="token function">delete</span><span class="token punctuation">(</span>g<span class="token punctuation">.</span>m<span class="token punctuation">,</span> key<span class="token punctuation">)</span>
+	g<span class="token punctuation">.</span>mu<span class="token punctuation">.</span><span class="token function">Unlock</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	<span class="token keyword">return</span> c<span class="token punctuation">.</span>val<span class="token punctuation">,</span> c<span class="token punctuation">.</span>err
+<span class="token punctuation">}</span>
+</code></pre></div><ol><li>执行加锁操作，锁住整个<code>m</code></li> <li>从<code>m</code>获取到<code>key</code>对应的<code>call</code> <ol><li>如果没有获取到，说明当前调用者是第一个执行该任务的。
+<ol><li>新建一个<code>call</code>，并设置到<code>m</code>里面。这一步是为了让任务对其他调用者可见。</li> <li><code>wg</code>增加1。这一步是为了让其他调用者感知任务正在执行中。</li> <li>释放锁，交出<code>m</code>控制权。跳出临界区。</li> <li>执行任务，并将结果设置到<code>call</code>里</li> <li><code>wg</code>减1。让其他调用者感知任务已执行完毕。其他调用者结束阻塞。</li> <li>再次锁住<code>m</code>，删除掉掉这个<code>key</code>，并释放锁。</li> <li>返回结果</li></ol></li> <li>如果获取到，说明当前调用者不是第一个执行该任务的，有其他任务已经在执行该任务。
+<ol><li>释放锁，等待<code>wg</code>。待第一个执行任务者执行结束。</li> <li>直接返回任务的执行结果。</li></ol></li></ol></li></ol> <h2 id="思考"><a href="#思考" class="header-anchor">#</a> 思考</h2> <ol><li><p>第一个调用者为什么要从map里删除这个key?</p> <p>singleflight解决的问题是，避免<strong>同一时间</strong>有多个调用者执行重复的操作，而不解决<strong>缓存问题</strong>。删除掉该key是为了让之后的调用者能够重新执行任务，而不是一直使用之前的任务结果。如果一直使用之前的任务结果，那singleflight就是一个单例实现的缓存；实际的场景任务是用来更新缓存的，而不是实现缓存</p></li> <li><p>怎么保证删除掉key后，其他的调用者还能获取到任务结果？</p> <p>任务执行中的时候，任务对应的<code>key</code>在<code>m</code>里能够访问到，其他调用者访问到并持有的是 <code>call</code>。只删除key不会导致value的改变，其他调用者依然能获取到当时的任务结果。</p></li></ol></div> <footer class="page-edit"><!----> <!----></footer> <div class="page-nav"><p class="inner"><span class="prev">
+      ←
+      <a href="/tech/language/golang/InterfaceOfGolang.html" class="prev">
+        语言-Golang Interface-解析Golang的接口
+      </a></span> <span class="next"><a href="/tech/language/golang/yichyaquestion.html">
+        语言-golang经典面试题-并发加载
+      </a>
+      →
+    </span></p></div> </main></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.8efeaaba.js" defer></script><script src="/assets/js/2.b7f7a349.js" defer></script><script src="/assets/js/20.9ccbc123.js" defer></script>
+  </body>
+</html>
